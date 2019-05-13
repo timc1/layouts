@@ -1,27 +1,62 @@
 import React from 'react'
 import styled from '@emotion/styled'
+import Transition from './transition'
 // @ts-ignore
 import apercu from './shared/apercu-mono.ttf'
 import { Global, css } from '@emotion/core'
-import { Link as RRLink } from 'react-router-dom'
+import { Link as RRLink, Route, Switch } from 'react-router-dom'
 
 const url = '/canalstreet.market'
-const ANIMATION_DURATION = 800
+const ANIMATION_DURATION = 350
+const ANIMATION_DELAY = 150
+
+type StateType = {
+  openIndex: number
+  isTransitioning: boolean
+}
+
+type ActionType = {
+  type: string
+  payload?: {
+    [k: string]: any
+  }
+}
+
+const reducer = (state: StateType, action: ActionType) => {
+  switch (action.type) {
+    case 'SET_OPEN_INDEX':
+      return {
+        ...state,
+        isTransitioning: true,
+        openIndex: action.payload && action.payload.index,
+      }
+    case 'STOP_TRANSITION':
+      return {
+        ...state,
+        isTransitioning: false,
+      }
+    default:
+      throw new Error(`No type of ${action.type} found.`)
+  }
+}
 
 export default function CanalStreetMarket(props: any) {
   const { section } = props.match.params
 
-  const [openIndex, setOpenIndex] = React.useState(() => {
-    switch (section) {
-      case 'food':
-        return 1
-      case 'retail':
-        return 2
-      case 'community':
-        return 3
-      default:
-        return 0
-    }
+  const [state, dispatch] = React.useReducer(reducer, {
+    openIndex: (() => {
+      switch (section) {
+        case 'food':
+          return 1
+        case 'retail':
+          return 2
+        case 'community':
+          return 3
+        default:
+          return 0
+      }
+    })(),
+    isTransitioning: false,
   })
 
   const listRef = React.useRef<HTMLUListElement>(null)
@@ -31,7 +66,7 @@ export default function CanalStreetMarket(props: any) {
   // Updates the position of <Content />
   React.useLayoutEffect(() => {
     let translateAmt: number
-    switch (openIndex) {
+    switch (state.openIndex) {
       case 1:
         translateAmt = 2
         break
@@ -50,13 +85,13 @@ export default function CanalStreetMarket(props: any) {
         if (content.current)
           content.current.style.transform = `translateX(${translateAmt * 60}px)`
       },
-      initialRender.current ? 1000 : 0
+      initialRender.current ? ANIMATION_DURATION : 0
     )
 
     if (!initialRender.current) {
       initialRender.current = true
     }
-  }, [openIndex])
+  }, [state.openIndex])
 
   const previousOpenIndex = React.useRef<number>()
   const initRender = React.useRef(false)
@@ -66,14 +101,21 @@ export default function CanalStreetMarket(props: any) {
       // Transition elements by x axis only after initial mount.
       if (initRender.current) {
         if (previousOpenIndex.current !== undefined) {
-          if (openIndex > previousOpenIndex.current) {
-            const elements = links.slice(0, openIndex + 1)
+          if (state.openIndex > previousOpenIndex.current) {
+            const elements = links.slice(0, state.openIndex + 1)
+
+            // Fade content out
+            if (content.current) {
+              content.current.style.opacity = '0'
+              content.current.style.transition = `opacity ${ANIMATION_DELAY}ms var(--ease)`
+            }
+
             elements.forEach((el, index) => {
               const position = el.getBoundingClientRect() as any
               el.style.transform = `translateX(${-1 *
                 (position.x - index * 60)}px)`
-              el.style.transitionDelay = `none`
               el.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease)`
+              el.style.transitionDelay = `${ANIMATION_DELAY}ms`
 
               setTimeout(() => {
                 if (el) {
@@ -82,20 +124,34 @@ export default function CanalStreetMarket(props: any) {
                   el.style.transition = ``
                   el.style.left = `${index * 60}px`
                   el.style.right = `unset`
+
+                  // Fade content back in.
+                  if (content.current) {
+                    content.current.style.opacity = '1'
+                    content.current.style.transition = `opacity ${ANIMATION_DELAY}ms var(--ease)`
+                    content.current.style.transitionDelay = `${ANIMATION_DELAY}ms`
+                  }
                 }
-              }, ANIMATION_DURATION)
+              }, ANIMATION_DURATION + ANIMATION_DELAY)
             })
           } else {
             // Don't move home link.
-            const elements = links.slice(openIndex + 1)
+            const elements = links.slice(state.openIndex + 1)
+
+            // Fade content out
+            if (content.current) {
+              content.current.style.opacity = '0'
+              content.current.style.transition = `opacity ${ANIMATION_DELAY}ms var(--ease)`
+            }
+
             elements.forEach((el, index) => {
               const position = el.getBoundingClientRect() as any
               const innerWidth = window.innerWidth
 
               el.style.transform = `translateX(${innerWidth -
                 (position.x + 60 * (elements.length - index))}px)`
-              el.style.transitionDelay = `none`
               el.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease)`
+              el.style.transitionDelay = `${ANIMATION_DELAY}ms`
 
               setTimeout(() => {
                 if (el) {
@@ -105,7 +161,14 @@ export default function CanalStreetMarket(props: any) {
                   el.style.left = `unset`
                   el.style.right = `${60 * (elements.length - 1 - index)}px`
                 }
-              }, ANIMATION_DURATION)
+
+                // Fade content back in.
+                if (content.current) {
+                  content.current.style.opacity = '1'
+                  content.current.style.transition = `opacity ${ANIMATION_DELAY}ms var(--ease)`
+                  content.current.style.transitionDelay = `${ANIMATION_DELAY}ms`
+                }
+              }, ANIMATION_DURATION + ANIMATION_DELAY)
             })
           }
         }
@@ -113,21 +176,21 @@ export default function CanalStreetMarket(props: any) {
         // Transition elements by y axis only if initial mount.
         initRender.current = true
         links.forEach((link, index) => {
-          if (index <= openIndex) {
+          if (index <= state.openIndex) {
             link.style.left = `${index * 60}px`
             link.style.right = `unset`
           }
           link.style.transform = `translateY(0)`
           link.style.transformOrigin = `0 0`
           link.style.transition = `transform ${ANIMATION_DURATION *
-            2}ms var(--ease)`
-          link.style.transitionDelay = `${-150 * index}ms`
+            3}ms var(--ease)`
+          link.style.transitionDelay = `${-100 * index}ms`
         })
       }
     }
 
-    previousOpenIndex.current = openIndex
-  }, [openIndex])
+    previousOpenIndex.current = state.openIndex
+  }, [state.openIndex])
 
   const links = [
     { url: url, text: 'Home' },
@@ -143,11 +206,14 @@ export default function CanalStreetMarket(props: any) {
         <Nav>
           <Ul ref={listRef}>
             {links.map((l, index) => (
-              <li key={l.url} data-nav-item>
+              <li key={l.url}>
                 <Link
                   to={l.url}
                   onClick={() => {
-                    setOpenIndex(index)
+                    dispatch({
+                      type: 'SET_OPEN_INDEX',
+                      payload: { index },
+                    })
                   }}
                 >
                   {l.text}
@@ -157,7 +223,28 @@ export default function CanalStreetMarket(props: any) {
           </Ul>
         </Nav>
       </Header>
-      <Content ref={content}>Content</Content>
+      <Content ref={content}>
+        <Transition transitionKey={props.match.url}>
+          <Switch>
+            <Route path={`${url}`} exact component={() => <div>Home</div>} />
+            <Route
+              path={`${url}/food`}
+              exact
+              component={() => <div>Food</div>}
+            />
+            <Route
+              path={`${url}/retail`}
+              exact
+              component={() => <div>Retail</div>}
+            />
+            <Route
+              path={`${url}/community`}
+              exact
+              component={() => <div>Community</div>}
+            />
+          </Switch>
+        </Transition>
+      </Content>
     </>
   )
 }

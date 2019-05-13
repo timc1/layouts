@@ -24,6 +24,15 @@ const globalStyles = css`
     font-variant-numeric: proportional-nums;
   }
 
+  html {
+    overflow: scroll;
+    overflow-x: hidden;
+  }
+  ::-webkit-scrollbar {
+    width: 0px; /* Remove scrollbar space */
+    background: transparent; /* Optional: just make scrollbar invisible */
+  }
+
   body {
     margin: 0;
     padding: 0;
