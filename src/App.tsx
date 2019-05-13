@@ -8,7 +8,10 @@ export default function App() {
     <>
       <Router>
         <Route path="/" exact component={Home} />
-        <Route path="/canalstreet.market" component={CanalStreetMarket} />
+        <Route
+          path="/canalstreet.market/:section?"
+          component={CanalStreetMarket}
+        />
       </Router>
     </>
   )

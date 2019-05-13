@@ -8,7 +8,7 @@ const globalStyles = css`
   @font-face {
     font-family: 'Inter';
     src: url(${interWoff2}) format('woff2'), url(${interWoff}) format('woff');
-    font-weight: 400 600;
+    font-weight: 100 700;
   }
 
   * {
