@@ -1,8 +1,9 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import Transition from './transition'
+import useUpdatedLayoutEffect from './shared/use-updated-layout-effect'
 // @ts-ignore
 import apercu from './shared/apercu-mono.ttf'
+import posed, { PoseGroup } from 'react-pose'
 import { Global, css } from '@emotion/core'
 import { Link as RRLink, Route, Switch } from 'react-router-dom'
 
@@ -61,43 +62,45 @@ export default function CanalStreetMarket(props: any) {
 
   const listRef = React.useRef<HTMLUListElement>(null)
   const content = React.useRef<HTMLDivElement>(null)
+  const transitionCoverRef = React.useRef<HTMLDivElement>(null)
 
-  const initialRender = React.useRef(false)
   // Updates the position of <Content />
-  React.useLayoutEffect(() => {
-    let translateAmt: number
-    switch (state.openIndex) {
-      case 1:
-        translateAmt = 2
-        break
-      case 2:
-        translateAmt = 3
-        break
-      case 3:
-        translateAmt = 4
-        break
-      default:
-        translateAmt = 1
-    }
+  useUpdatedLayoutEffect(
+    (premount: boolean) => {
+      let translateAmt: number
+      switch (state.openIndex) {
+        case 1:
+          translateAmt = 2
+          break
+        case 2:
+          translateAmt = 3
+          break
+        case 3:
+          translateAmt = 4
+          break
+        default:
+          translateAmt = 1
+      }
 
-    setTimeout(
-      () => {
-        if (content.current)
-          content.current.style.transform = `translateX(${translateAmt * 60}px)`
-      },
-      initialRender.current ? ANIMATION_DURATION : 0
-    )
-
-    if (!initialRender.current) {
-      initialRender.current = true
-    }
-  }, [state.openIndex])
+      setTimeout(
+        () => {
+          if (content.current)
+            content.current.style.transform = `translateX(${translateAmt *
+              60}px)`
+        },
+        premount ? 0 : ANIMATION_DURATION
+      )
+    },
+    [state.openIndex],
+    true
+  )
 
   const previousOpenIndex = React.useRef<number>()
   const initRender = React.useRef(false)
   React.useEffect(() => {
     if (listRef.current) {
       const links = Array.from(listRef.current.querySelectorAll('li'))
+
       // Transition elements by x axis only after initial mount.
       if (initRender.current) {
         if (previousOpenIndex.current !== undefined) {
@@ -192,6 +195,24 @@ export default function CanalStreetMarket(props: any) {
     previousOpenIndex.current = state.openIndex
   }, [state.openIndex])
 
+  // Transitions for background transition layer.
+  useUpdatedLayoutEffect(
+    (premount: boolean) => {
+      if (premount) {
+        console.log('premount')
+        return
+      }
+      if (transitionCoverRef.current) {
+        const transitionCovers = Array.from(
+          transitionCoverRef.current.querySelectorAll('span')
+        )
+        console.log(transitionCovers)
+      }
+    },
+    [state.openIndex],
+    true // Premount - pls make this more clear lol 🙃
+  )
+
   const links = [
     { url: url, text: 'Home' },
     { url: `${url}/food`, text: 'Food' },
@@ -222,32 +243,45 @@ export default function CanalStreetMarket(props: any) {
             ))}
           </Ul>
         </Nav>
+        <TransitionCover ref={transitionCoverRef}>
+          <span />
+          <span />
+          <span />
+          <span />
+        </TransitionCover>
       </Header>
       <Content ref={content}>
-        <Transition transitionKey={props.match.url}>
-          <Switch>
-            <Route path={`${url}`} exact component={() => <div>Home</div>} />
-            <Route
-              path={`${url}/food`}
-              exact
-              component={() => <div>Food</div>}
-            />
-            <Route
-              path={`${url}/retail`}
-              exact
-              component={() => <div>Retail</div>}
-            />
-            <Route
-              path={`${url}/community`}
-              exact
-              component={() => <div>Community</div>}
-            />
-          </Switch>
-        </Transition>
+        <PoseGroup>
+          <RoutesContainer key={props.match.url}>
+            <Switch location={props.location}>
+              <Route path={`${url}`} exact component={() => <div>Home</div>} />
+              <Route
+                path={`${url}/food`}
+                exact
+                component={() => <div>Food</div>}
+              />
+              <Route
+                path={`${url}/retail`}
+                exact
+                component={() => <div>Retail</div>}
+              />
+              <Route
+                path={`${url}/community`}
+                exact
+                component={() => <div>Community</div>}
+              />
+            </Switch>
+          </RoutesContainer>
+        </PoseGroup>
       </Content>
     </>
   )
 }
+
+const RoutesContainer = posed.div({
+  enter: { opacity: 1, delay: ANIMATION_DELAY },
+  exit: { opacity: 0, delay: ANIMATION_DELAY },
+})
 
 const globalStyles = css`
   @font-face {
@@ -280,6 +314,44 @@ const Header = styled.header`
 
 const Nav = styled.nav`
   height: 100%;
+`
+
+const TransitionCover = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  touch-action: none;
+  z-index: -1;
+
+  > span {
+    position: absolute;
+    top: 0;
+    width: calc(100% - var(--nav-link-width) * 3);
+    height: 100%;
+  }
+
+  > span:first-of-type {
+    left: 0;
+    background: var(--white);
+  }
+
+  > span:nth-of-type(2) {
+    left: var(--nav-link-width);
+    background: var(--blue);
+  }
+
+  > span:nth-of-type(3) {
+    left: calc(var(--nav-link-width) * 2);
+    background: var(--red);
+  }
+
+  > span:nth-of-type(4) {
+    left: calc(var(--nav-link-width) * 3);
+    background: var(--yellow);
+  }
 `
 
 const Ul = styled.ul`
