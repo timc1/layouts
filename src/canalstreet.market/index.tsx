@@ -8,7 +8,7 @@ import { Global, css } from '@emotion/core'
 import { Link as RRLink, Route, Switch } from 'react-router-dom'
 
 const url = '/canalstreet.market'
-const ANIMATION_DURATION = 500
+const TRANSITION_DURATION = 250
 const ANIMATION_DELAY = 250
 const colors = [`var(--white)`, `var(--blue)`, `var(--red)`, `var(--yellow)`]
 
@@ -89,7 +89,7 @@ export default function CanalStreetMarket(props: any) {
             content.current.style.transform = `translateX(${translateAmt *
               60}px)`
         },
-        premount ? 0 : ANIMATION_DURATION
+        premount ? 0 : TRANSITION_DURATION
       )
     },
     [state.openIndex],
@@ -118,7 +118,7 @@ export default function CanalStreetMarket(props: any) {
               const position = el.getBoundingClientRect() as any
               el.style.transform = `translateX(${-1 *
                 (position.x - index * 60)}px)`
-              el.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease)`
+              el.style.transition = `transform ${TRANSITION_DURATION}ms var(--ease)`
               el.style.transitionDelay = `${ANIMATION_DELAY}ms`
 
               setTimeout(() => {
@@ -136,7 +136,7 @@ export default function CanalStreetMarket(props: any) {
                     content.current.style.transitionDelay = `${ANIMATION_DELAY}ms`
                   }
                 }
-              }, ANIMATION_DURATION + ANIMATION_DELAY)
+              }, TRANSITION_DURATION + ANIMATION_DELAY)
             })
           } else {
             // Don't move home link.
@@ -154,7 +154,7 @@ export default function CanalStreetMarket(props: any) {
 
               el.style.transform = `translateX(${innerWidth -
                 (position.x + 60 * (elements.length - index))}px)`
-              el.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease)`
+              el.style.transition = `transform ${TRANSITION_DURATION}ms var(--ease)`
               el.style.transitionDelay = `${ANIMATION_DELAY}ms`
 
               setTimeout(() => {
@@ -172,7 +172,7 @@ export default function CanalStreetMarket(props: any) {
                   content.current.style.transition = `opacity ${ANIMATION_DELAY}ms var(--ease)`
                   content.current.style.transitionDelay = `${ANIMATION_DELAY}ms`
                 }
-              }, ANIMATION_DURATION + ANIMATION_DELAY)
+              }, TRANSITION_DURATION + ANIMATION_DELAY)
             })
           }
         }
@@ -186,8 +186,8 @@ export default function CanalStreetMarket(props: any) {
           }
           link.style.transform = `translateY(0)`
           link.style.transformOrigin = `0 0`
-          link.style.transition = `transform ${ANIMATION_DURATION *
-            3}ms var(--ease)`
+          link.style.transition = `transform ${TRANSITION_DURATION *
+            7}ms var(--ease)`
           link.style.transitionDelay = `${-100 * index}ms`
         })
       }
@@ -207,7 +207,9 @@ export default function CanalStreetMarket(props: any) {
         if (premount) {
           backgrounds.forEach((bg, index) => {
             if (index > state.openIndex) {
-              bg.style.transform = `translateX(calc(100% - var(--nav-link-width)))`
+              bg.style.transform = `translateX(calc(100% - calc(var(--nav-link-width) * 2)))`
+              bg.style.opacity = `0`
+            } else if (index !== state.openIndex) {
               bg.style.opacity = `0`
             }
           })
@@ -216,14 +218,13 @@ export default function CanalStreetMarket(props: any) {
 
         backgrounds.forEach((bg, index) => {
           if (index <= state.openIndex) {
-            bg.style.transform = `translateX(0)`
+            // Open
+            bg.style.transform = `translateX(0px)`
             bg.style.opacity = `1`
-            bg.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms`
+            bg.style.transition = `transform ${TRANSITION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms`
           } else {
-            bg.style.transform = `translateX(calc(100% + var(--nav-link-width)))`
-            bg.style.opacity = `0`
-            bg.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms, opacity 0ms var(--ease) ${ANIMATION_DURATION +
-              ANIMATION_DELAY}ms`
+            bg.style.transform = `translateX(calc(100% - calc(var(--nav-link-width) * 2)))`
+            bg.style.transition = `transform ${TRANSITION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms`
           }
         })
       }
@@ -232,9 +233,11 @@ export default function CanalStreetMarket(props: any) {
     true // Premount - pls make this more clear lol 🙃
   )
 
+  console.log('state', state)
+
   // Update document body color on each route change.
   React.useLayoutEffect(() => {
-    //document.body.style.backgroundColor = colors[state.openIndex]
+    document.body.style.backgroundColor = colors[state.openIndex]
   }, [state.openIndex])
 
   const links = [
@@ -353,7 +356,7 @@ const TransitionCover = styled.div`
   > span {
     position: absolute;
     top: 0;
-    width: calc(100% - var(--nav-link-width) * 3);
+    width: calc(100% - var(--nav-link-width) * 2);
     height: 100%;
   }
 
