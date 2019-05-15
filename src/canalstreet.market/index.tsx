@@ -1,6 +1,8 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import useUpdatedLayoutEffect from './shared/use-updated-layout-effect'
+import useUpdatedEffect from './shared/use-updated-effect'
+import Logo from './shared/logo'
 // @ts-ignore
 import apercu from './shared/apercu-mono.ttf'
 import posed, { PoseGroup } from 'react-pose'
@@ -8,8 +10,8 @@ import { Global, css } from '@emotion/core'
 import { Link as RRLink, Route, Switch } from 'react-router-dom'
 
 const url = '/canalstreet.market'
-const TRANSITION_DURATION = 250
-const ANIMATION_DELAY = 250
+const TRANSITION_DURATION = 280
+const ANIMATION_DELAY = 280
 const colors = [`var(--white)`, `var(--blue)`, `var(--red)`, `var(--yellow)`]
 
 type StateType = {
@@ -65,6 +67,31 @@ export default function CanalStreetMarket(props: any) {
   const content = React.useRef<HTMLDivElement>(null)
   const transitionCoverRef = React.useRef<HTMLDivElement>(null)
 
+  // Updates the current state.openIndex state on each
+  // route change. This will trigger an update to all
+  // side effects that rely on state.openIndex
+  useUpdatedEffect(() => {
+    let index
+    switch (props.match.params.section) {
+      case 'food':
+        index = 1
+        break
+      case 'retail':
+        index = 2
+        break
+      case 'community':
+        index = 3
+        break
+      default:
+        index = 0
+    }
+
+    dispatch({
+      type: 'SET_OPEN_INDEX',
+      payload: { index },
+    })
+  }, [props.match.params.section])
+
   // Updates the position of <Content />
   useUpdatedLayoutEffect(
     (premount: boolean) => {
@@ -96,6 +123,7 @@ export default function CanalStreetMarket(props: any) {
     true
   )
 
+  // Updates the position of nav links.
   const previousOpenIndex = React.useRef<number>()
   const initRender = React.useRef(false)
   React.useEffect(() => {
@@ -187,7 +215,7 @@ export default function CanalStreetMarket(props: any) {
           link.style.transform = `translateY(0)`
           link.style.transformOrigin = `0 0`
           link.style.transition = `transform ${TRANSITION_DURATION *
-            7}ms var(--ease)`
+            6}ms var(--ease)`
           link.style.transitionDelay = `${-100 * index}ms`
         })
       }
@@ -233,18 +261,16 @@ export default function CanalStreetMarket(props: any) {
     true // Premount - pls make this more clear lol 🙃
   )
 
-  console.log('state', state)
-
   // Update document body color on each route change.
   React.useLayoutEffect(() => {
     document.body.style.backgroundColor = colors[state.openIndex]
   }, [state.openIndex])
 
   const links = [
-    { url: url, text: 'Home' },
-    { url: `${url}/food`, text: 'Food' },
-    { url: `${url}/retail`, text: 'Retail' },
-    { url: `${url}/community`, text: 'Community' },
+    { url: url, text: 'Home', chinese: `主页` },
+    { url: `${url}/food`, text: 'Food', chinese: `餐饮` },
+    { url: `${url}/retail`, text: 'Retail', chinese: `購物` },
+    { url: `${url}/community`, text: 'Community', chinese: `文化` },
   ]
 
   return (
@@ -252,22 +278,44 @@ export default function CanalStreetMarket(props: any) {
       <Global styles={globalStyles} />
       <Header>
         <Nav>
+          <Logo
+            style={{
+              position: 'absolute',
+              top: '0',
+              pointerEvents: 'none',
+              touchAction: 'none',
+              zIndex: 9,
+              transform:
+                props.match.url === url
+                  ? `translate(60px, 60px) scale(1)`
+                  : `translate(0px, 60px) scale(.8)`,
+              transition: `transform ${TRANSITION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms`,
+            }}
+          />
           <Ul ref={listRef}>
-            {links.map((l, index) => (
-              <li key={l.url}>
-                <Link
-                  to={l.url}
-                  onClick={() => {
-                    dispatch({
-                      type: 'SET_OPEN_INDEX',
-                      payload: { index },
-                    })
-                  }}
-                >
-                  {l.text}
-                </Link>
-              </li>
-            ))}
+            {links.map((l, index) => {
+              const isOpen = l.url === props.match.url
+              return (
+                <li key={l.url}>
+                  <Link
+                    to={l.url}
+                    style={{
+                      opacity: isOpen ? 0 : 1,
+                      transitionDelay: isOpen
+                        ? `${TRANSITION_DURATION}ms`
+                        : 'none',
+                      pointerEvents: isOpen ? 'none' : 'initial',
+                      touchAction: isOpen ? 'none' : 'initial',
+                    }}
+                    tabIndex={isOpen ? '-1' : '0'}
+                    aria-current={isOpen ? 'page' : null}
+                  >
+                    <span className="zh-text">{l.chinese}</span>
+                    <span className="en-text">{l.text}</span>
+                  </Link>
+                </li>
+              )
+            })}
           </Ul>
         </Nav>
         <TransitionCover ref={transitionCoverRef}>
@@ -328,6 +376,8 @@ const globalStyles = css`
     --font-apercu: 'Apercu', system-ui, sans-serif;
 
     --ease: cubic-bezier(0.8, 0, 0.2, 1);
+
+    --font-size-md: 20px;
   }
 `
 
@@ -396,6 +446,9 @@ const Ul = styled.ul`
   > li:first-of-type {
     right: calc(var(--nav-link-width) * 3);
     background: var(--white);
+    span {
+      opacity: 0;
+    }
   }
 
   > li:nth-of-type(2) {
@@ -414,20 +467,34 @@ const Ul = styled.ul`
   }
 `
 
-const Link = styled(RRLink)`
+const Link = styled(RRLink)<any>`
   display: flex;
   height: inherit;
   width: 100%;
   align-items: center;
   justify-content: center;
-  writing-mode: vertical-lr;
-  font-family: var(--font-apercu);
-  color: var(--black);
   text-decoration: none;
+  transition: opacity ${TRANSITION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms;
+
+  > span {
+    font-family: var(--font-apercu);
+    font-size: var(--font-size-md);
+    color: var(--black);
+  }
+
+  > span.zh-text {
+    position: absolute;
+    top: 75px;
+  }
+
+  > span.en-text {
+    writing-mode: vertical-lr;
+  }
 `
 
 const Content = styled.div`
   position: relative;
   width: calc(100% - (4 * var(--nav-link-width)));
+  padding: 180px 60px 60px 0px;
   z-index: 9;
 `

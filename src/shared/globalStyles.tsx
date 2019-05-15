@@ -22,6 +22,7 @@ const globalStyles = css`
     -webkit-font-feature-settings: 'pnum';
     font-feature-settings: 'pnum';
     font-variant-numeric: proportional-nums;
+    box-sizing: border-box;
   }
 
   html {
@@ -72,6 +73,14 @@ const globalStyles = css`
   input:-webkit-autofill {
     -webkit-text-fill-color: #000;
     transition: background-color 100000000s;
+  }
+
+  /*
+  This will hide the focus indicator if the element receives focus via the mouse,
+  but it will still show up on keyboard focus.
+*/
+  .js-focus-visible :focus:not(.focus-visible) {
+    outline: none;
   }
 `
 
