@@ -8,8 +8,9 @@ import { Global, css } from '@emotion/core'
 import { Link as RRLink, Route, Switch } from 'react-router-dom'
 
 const url = '/canalstreet.market'
-const ANIMATION_DURATION = 350
-const ANIMATION_DELAY = 150
+const ANIMATION_DURATION = 500
+const ANIMATION_DELAY = 250
+const colors = [`var(--white)`, `var(--blue)`, `var(--red)`, `var(--yellow)`]
 
 type StateType = {
   openIndex: number
@@ -198,20 +199,43 @@ export default function CanalStreetMarket(props: any) {
   // Transitions for background transition layer.
   useUpdatedLayoutEffect(
     (premount: boolean) => {
-      if (premount) {
-        console.log('premount')
-        return
-      }
       if (transitionCoverRef.current) {
-        const transitionCovers = Array.from(
+        const backgrounds = Array.from(
           transitionCoverRef.current.querySelectorAll('span')
         )
-        console.log(transitionCovers)
+
+        if (premount) {
+          backgrounds.forEach((bg, index) => {
+            if (index > state.openIndex) {
+              bg.style.transform = `translateX(calc(100% - var(--nav-link-width)))`
+              bg.style.opacity = `0`
+            }
+          })
+          return
+        }
+
+        backgrounds.forEach((bg, index) => {
+          if (index <= state.openIndex) {
+            bg.style.transform = `translateX(0)`
+            bg.style.opacity = `1`
+            bg.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms`
+          } else {
+            bg.style.transform = `translateX(calc(100% + var(--nav-link-width)))`
+            bg.style.opacity = `0`
+            bg.style.transition = `transform ${ANIMATION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms, opacity 0ms var(--ease) ${ANIMATION_DURATION +
+              ANIMATION_DELAY}ms`
+          }
+        })
       }
     },
     [state.openIndex],
     true // Premount - pls make this more clear lol 🙃
   )
+
+  // Update document body color on each route change.
+  React.useLayoutEffect(() => {
+    //document.body.style.backgroundColor = colors[state.openIndex]
+  }, [state.openIndex])
 
   const links = [
     { url: url, text: 'Home' },
