@@ -1,18 +1,20 @@
 import React from 'react'
 import styled from '@emotion/styled'
 
-export function Header({
+export default function Header({
   title,
   longTitle,
   zhText,
   imgSrc,
   imgAlt,
+  moreInfo,
 }: {
   title: string
   longTitle: string
   zhText: string
   imgSrc: string
   imgAlt: string
+  moreInfo: string[]
 }) {
   return (
     <Section>
@@ -21,7 +23,18 @@ export function Header({
         <LongTitle>{longTitle}</LongTitle>
         <LongTitlePhoto>
           <img src={imgSrc} alt={imgAlt} />
-          <ZhText>{zhText}</ZhText>
+          <ZhText
+            style={{
+              left: imgSrc ? '' : '0',
+            }}
+          >
+            {zhText}
+          </ZhText>
+          <MoreInfo>
+            {moreInfo.map(info => (
+              <p key={info}>{info}</p>
+            ))}
+          </MoreInfo>
         </LongTitlePhoto>
       </LongTitleWithPhoto>
     </Section>
@@ -56,12 +69,13 @@ const LongTitle = styled.h2`
 const LongTitleWithPhoto = styled.div`
   display: grid;
   grid-template-columns: 2.5fr 1fr;
-  margin: var(--large-vertical-spacing) 0;
+  margin: var(--large-vertical-spacing) 0
+    calc(var(--large-vertical-spacing) / 2) 0;
 `
 
 const LongTitlePhoto = styled.div`
   position: relative;
-  padding-top: 130%;
+  padding-top: 120%;
   height: max-content;
   transform: translate(
     calc(var(--large-vertical-spacing) / 2 * -1),
@@ -74,7 +88,6 @@ const LongTitlePhoto = styled.div`
     left: 0;
     height: 100%;
     width: 100%;
-    background: #eee;
     object-fit: cover;
   }
 `
@@ -84,4 +97,16 @@ const ZhText = styled.span`
   top: -46px;
   right: -73px;
   font-size: var(--font-size-lg);
+`
+
+const MoreInfo = styled.div`
+  position: absolute;
+  top: calc(-1 * var(--large-vertical-spacing));
+  right: -73px;
+  > p {
+    line-height: 21px;
+    font-size: var(--font-size-xs);
+    text-align: right;
+    max-width: 280px;
+  }
 `

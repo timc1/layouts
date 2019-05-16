@@ -23,7 +23,7 @@ export default function Home() {
 }
 
 const Title = styled.h1`
-  padding-top: 70px;
+  padding-top: 130px;
   font-family: var(--font-ogg);
   font-size: var(--font-size-xl);
   max-width: 1030px;

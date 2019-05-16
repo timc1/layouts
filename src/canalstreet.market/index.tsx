@@ -5,6 +5,8 @@ import useUpdatedEffect from './shared/use-updated-effect'
 import Logo from './shared/logo'
 import Home from './pages/home'
 import Food from './pages/food'
+import Retail from './pages/retail'
+import Community from './pages/community'
 // @ts-ignore
 import apercu from './shared/assets/fonts/apercu-mono.ttf'
 // @ts-ignore
@@ -70,6 +72,13 @@ export default function CanalStreetMarket(props: any) {
   const listRef = React.useRef<HTMLUListElement>(null)
   const content = React.useRef<HTMLDivElement>(null)
   const transitionCoverRef = React.useRef<HTMLDivElement>(null)
+
+  const links = [
+    { url: url, text: 'Home', chinese: `主页` },
+    { url: `${url}/food`, text: 'Food', chinese: `餐饮` },
+    { url: `${url}/retail`, text: 'Retail', chinese: `購物` },
+    { url: `${url}/community`, text: 'Community', chinese: `文化` },
+  ]
 
   // Updates the current state.openIndex state on each
   // route change. This will trigger an update to all
@@ -256,7 +265,6 @@ export default function CanalStreetMarket(props: any) {
 
         backgrounds.forEach((bg, index) => {
           if (index <= state.openIndex) {
-            // Open
             bg.style.transform = `translateX(0px)`
             bg.style.opacity = `1`
             bg.style.transition = `transform ${TRANSITION_DURATION}ms var(--ease) ${ANIMATION_DELAY}ms`
@@ -271,17 +279,19 @@ export default function CanalStreetMarket(props: any) {
     true // Premount - pls make this more clear lol 🙃
   )
 
+  // Animate content in after initial animation
+  React.useEffect(() => {
+    setTimeout(() => {
+      if (content.current) {
+        content.current.style.opacity = '1'
+      }
+    }, (TRANSITION_DURATION + 100) * links.length)
+  }, [links.length])
+
   // Update document body color on each route change.
   React.useLayoutEffect(() => {
     document.body.style.backgroundColor = colors[state.openIndex]
   }, [state.openIndex])
-
-  const links = [
-    { url: url, text: 'Home', chinese: `主页` },
-    { url: `${url}/food`, text: 'Food', chinese: `餐饮` },
-    { url: `${url}/retail`, text: 'Retail', chinese: `購物` },
-    { url: `${url}/community`, text: 'Community', chinese: `文化` },
-  ]
 
   return (
     <>
@@ -341,16 +351,8 @@ export default function CanalStreetMarket(props: any) {
             <Switch location={props.location}>
               <Route path={`${url}`} exact component={Home} />
               <Route path={`${url}/food`} exact component={Food} />
-              <Route
-                path={`${url}/retail`}
-                exact
-                component={() => <div>Retail</div>}
-              />
-              <Route
-                path={`${url}/community`}
-                exact
-                component={() => <div>Community</div>}
-              />
+              <Route path={`${url}/retail`} exact component={Retail} />
+              <Route path={`${url}/community`} exact component={Community} />
             </Switch>
           </RoutesContainer>
         </PoseGroup>
@@ -390,9 +392,12 @@ const globalStyles = css`
 
     --ease: cubic-bezier(0.8, 0, 0.2, 1);
 
+    --font-size-xxs: 11px;
+    --font-size-xs: 14px;
     --font-size-sm: 15px;
     --font-size-md: 20px;
     --font-size-lg: 60px;
+    --font-size-ml: 32px;
     --font-size-xl: 75px;
     --font-size-xxl: 200px;
 
@@ -518,6 +523,8 @@ const Link = styled(RRLink)<any>`
 const Content = styled.div`
   position: relative;
   width: calc(100% - (4 * var(--nav-link-width)));
-  padding: 180px 60px 60px 0px;
+  padding: 120px 60px 60px 0px;
+  opacity: 0;
+  transition: opacity ${TRANSITION_DURATION * 2}ms var(--ease);
   z-index: 9;
 `
