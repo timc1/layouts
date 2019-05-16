@@ -22,7 +22,6 @@ const colors = [`var(--white)`, `var(--blue)`, `var(--red)`, `var(--yellow)`]
 
 type StateType = {
   openIndex: number
-  isTransitioning: boolean
 }
 
 type ActionType = {
@@ -37,13 +36,7 @@ const reducer = (state: StateType, action: ActionType) => {
     case 'SET_OPEN_INDEX':
       return {
         ...state,
-        isTransitioning: true,
         openIndex: action.payload && action.payload.index,
-      }
-    case 'STOP_TRANSITION':
-      return {
-        ...state,
-        isTransitioning: false,
       }
     default:
       throw new Error(`No type of ${action.type} found.`)
@@ -66,7 +59,6 @@ export default function CanalStreetMarket(props: any) {
           return 0
       }
     })(),
-    isTransitioning: false,
   })
 
   const listRef = React.useRef<HTMLUListElement>(null)
