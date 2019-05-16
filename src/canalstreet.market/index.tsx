@@ -3,8 +3,12 @@ import styled from '@emotion/styled'
 import useUpdatedLayoutEffect from './shared/use-updated-layout-effect'
 import useUpdatedEffect from './shared/use-updated-effect'
 import Logo from './shared/logo'
+import Home from './pages/home'
+import Food from './pages/food'
 // @ts-ignore
-import apercu from './shared/apercu-mono.ttf'
+import apercu from './shared/assets/fonts/apercu-mono.ttf'
+// @ts-ignore
+import ogg from './shared/assets/fonts/ogg.otf'
 import posed, { PoseGroup } from 'react-pose'
 import { Global, css } from '@emotion/core'
 import { Link as RRLink, Route, Switch } from 'react-router-dom'
@@ -90,6 +94,12 @@ export default function CanalStreetMarket(props: any) {
       type: 'SET_OPEN_INDEX',
       payload: { index },
     })
+
+    // Scroll window to top since we're only changing
+    // nodes nested within <Content />
+    setTimeout(() => {
+      window.scrollTo({ top: 0 })
+    }, ANIMATION_DELAY)
   }, [props.match.params.section])
 
   // Updates the position of <Content />
@@ -329,12 +339,8 @@ export default function CanalStreetMarket(props: any) {
         <PoseGroup>
           <RoutesContainer key={props.match.url}>
             <Switch location={props.location}>
-              <Route path={`${url}`} exact component={() => <div>Home</div>} />
-              <Route
-                path={`${url}/food`}
-                exact
-                component={() => <div>Food</div>}
-              />
+              <Route path={`${url}`} exact component={Home} />
+              <Route path={`${url}/food`} exact component={Food} />
               <Route
                 path={`${url}/retail`}
                 exact
@@ -365,6 +371,12 @@ const globalStyles = css`
     font-weight: 100 700;
   }
 
+  @font-face {
+    font-family: 'Ogg';
+    src: url(${ogg}) format('opentype');
+    font-weight: 100 700;
+  }
+
   :root {
     --nav-link-width: 60px;
     --black: #000;
@@ -374,10 +386,21 @@ const globalStyles = css`
     --yellow: #ffb400;
 
     --font-apercu: 'Apercu', system-ui, sans-serif;
+    --font-ogg: 'Ogg', serif;
 
     --ease: cubic-bezier(0.8, 0, 0.2, 1);
 
+    --font-size-sm: 15px;
     --font-size-md: 20px;
+    --font-size-lg: 60px;
+    --font-size-xl: 75px;
+    --font-size-xxl: 200px;
+
+    --large-vertical-spacing: 120px;
+  }
+
+  * {
+    font-family: var(--font-apercu);
   }
 `
 
