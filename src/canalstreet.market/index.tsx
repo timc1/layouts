@@ -341,10 +341,26 @@ export default function CanalStreetMarket(props: any) {
         <PoseGroup>
           <RoutesContainer key={props.match.url}>
             <Switch location={props.location}>
-              <Route path={`${url}`} exact component={Home} />
-              <Route path={`${url}/food`} exact component={Food} />
-              <Route path={`${url}/retail`} exact component={Retail} />
-              <Route path={`${url}/community`} exact component={Community} />
+              <Route
+                path={`${url}`}
+                exact
+                component={() => <div>CONTENT</div>}
+              />
+              <Route
+                path={`${url}/food`}
+                exact
+                component={() => <div>CONTENT</div>}
+              />
+              <Route
+                path={`${url}/retail`}
+                exact
+                component={() => <div>CONTENT</div>}
+              />
+              <Route
+                path={`${url}/community`}
+                exact
+                component={() => <div>CONTENT</div>}
+              />
             </Switch>
           </RoutesContainer>
         </PoseGroup>
