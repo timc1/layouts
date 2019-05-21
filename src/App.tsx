@@ -1,6 +1,7 @@
 import React from 'react'
 import Home from './home'
 import CanalStreetMarket from './canalstreet.market/index'
+import AnimatedNav from './animated-nav/index'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
           path="/canalstreet.market/:section?"
           component={CanalStreetMarket}
         />
+        <Route path="/animated-nav" component={AnimatedNav} />
       </Router>
     </>
   )

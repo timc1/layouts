@@ -19,21 +19,19 @@ export default function Home() {
 
       <ul>
         <li>
-          <p
-            style={{
-              marginBottom: '10px',
-              textTransform: 'uppercase',
-              fontSize: '12px',
-            }}
-          >
-            Canal Street Market
-          </p>
+          <p>Canal Street Market</p>
           <Link
             to="/canalstreet.market/"
             target="_blank"
             rel="noopener noreferrer"
           >
             canalstreet.market
+          </Link>
+        </li>
+        <li>
+          <p>Double Animated Navigation</p>
+          <Link to="/animated-nav/" target="_blank" rel="noopener noreferrer">
+            animated-nav
           </Link>
         </li>
       </ul>
@@ -56,6 +54,16 @@ const Container = styled.div`
   > ul {
     list-style: none;
     margin-top: 100px;
+  }
+
+  li {
+    margin-bottom: 40px;
+  }
+
+  li > p {
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 12px;
   }
 
   a {
